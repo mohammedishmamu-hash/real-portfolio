@@ -1,5 +1,5 @@
 "use client";
-
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { GitBranch, ExternalLink, Download } from "lucide-react";
 
@@ -234,13 +234,71 @@ function XPBar({ name, value }: { name: string; value: number }) {
 }
 
 function ContactForm() {
+  const [form, setForm] = React.useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.email || !form.message) return;
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        setStatus("success");
+        setForm({ name: "", email: "", message: "" });
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  if (status === "success") {
+    return (
+      <div style={{ textAlign: "center", padding: "32px 0" }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+        <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#00a800", marginBottom: 8 }}>
+          MESSAGE SENT!
+        </div>
+        <p style={{ fontSize: 12, color: "#6b7280" }}>I'll get back to you soon.</p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <input style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", fontFamily: "inherit" }} placeholder="Your name" />
-      <input style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", fontFamily: "inherit" }} placeholder="your@email.com" />
-      <textarea style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", height: 96, resize: "none", fontFamily: "inherit" }} placeholder="What's on your mind?" />
-      <button style={{ width: "100%", background: "#e8272b", color: "#fff", border: "none", borderBottom: "4px solid #8b0000", padding: "12px", fontFamily: "'Press Start 2P', monospace", fontSize: 8, cursor: "pointer" }}>
-        ▶ SEND MESSAGE
+      <input
+        style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", fontFamily: "inherit" }}
+        placeholder="Your name"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+      />
+      <input
+        style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", fontFamily: "inherit" }}
+        placeholder="your@email.com"
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+      />
+      <textarea
+        style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", height: 96, resize: "none", fontFamily: "inherit" }}
+        placeholder="What's on your mind?"
+        value={form.message}
+        onChange={(e) => setForm({ ...form, message: e.target.value })}
+      />
+      {status === "error" && (
+        <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#e8272b" }}>
+          ✗ FAILED. TRY AGAIN.
+        </p>
+      )}
+      <button
+        onClick={handleSubmit}
+        disabled={status === "loading"}
+        style={{ width: "100%", background: status === "loading" ? "#999" : "#e8272b", color: "#fff", border: "none", borderBottom: `4px solid ${status === "loading" ? "#666" : "#8b0000"}`, padding: "12px", fontFamily: "'Press Start 2P', monospace", fontSize: 8, cursor: status === "loading" ? "not-allowed" : "pointer" }}>
+        {status === "loading" ? "SENDING..." : "▶ SEND MESSAGE"}
       </button>
     </div>
   );
