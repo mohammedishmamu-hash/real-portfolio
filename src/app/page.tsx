@@ -30,7 +30,7 @@ export default function Home() {
             {navLinks.map((link) => (
               <motion.a key={link} href={`#${link.toLowerCase()}`}
                 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                style={{ color: "#fff", fontSize: 13, textDecoration: "none", cursor: "pointer" }}>
+                style={{ color: "#fff", fontSize: 10, textDecoration: "none", cursor: "pointer", fontFamily: "'Press Start 2P', monospace", textShadow: "1px 1px 0 #000" }}>
                 {link}
               </motion.a>
             ))}
@@ -63,7 +63,7 @@ export default function Home() {
               style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <PixelButton href="#projects" primary>▶ VIEW WORK</PixelButton>
               <PixelButton href="/cv.pdf">
-                <Download size={12} style={{ display: "inline", marginRight: 4 }} />DOWNLOAD CV
+                <Download size={12} style={{ display: "inline", marginRight: 4 }} />DOWNLOAD RESUME
               </PixelButton>
             </motion.div>
           </div>
@@ -171,6 +171,7 @@ function Block({ question, label }: { question: boolean; label: string }) {
 function PixelButton({ children, href, primary }: { children: React.ReactNode; href?: string; primary?: boolean }) {
   return (
     <a href={href}
+      download={href === "/cv.pdf" ? "Mohammed_Ishmam_Uddin_CV.pdf" : undefined}
       style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, padding: "10px 18px", background: primary ? "#e8272b" : "#ffd700", color: primary ? "#fff" : "#1a1a2e", borderBottom: `4px solid ${primary ? "#8b0000" : "#b8860b"}`, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
       {children}
     </a>
