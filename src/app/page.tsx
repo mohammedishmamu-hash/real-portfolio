@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { GitBranch, ExternalLink, Download } from "lucide-react";
 
@@ -35,10 +35,7 @@ export default function Home() {
               </motion.a>
             ))}
           </div>
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-            style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#fff", textAlign: "right", lineHeight: 2 }}>
-            <div>SCORE</div><div>008450</div><div>★ × 12</div>
-          </motion.div>
+          <VisitorScore />
         </nav>
 
         <div style={{ position: "relative", zIndex: 10, padding: "24px 32px 0", display: "flex", alignItems: "flex-end", gap: 24 }}>
@@ -301,6 +298,31 @@ function ContactForm() {
         {status === "loading" ? "SENDING..." : "▶ SEND MESSAGE"}
       </button>
     </div>
+  );
+}
+
+function VisitorScore() {
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/visitors", { method: "POST" })
+      .then((r) => r.json())
+      .then((d) => setCount(d.count));
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#fff", textAlign: "right", lineHeight: 2 }}
+    >
+      <div>SCORE</div>
+      <div>008450</div>
+      <div>★ × 12</div>
+      <div style={{ color: "#ffd700" }}>
+        👁 × {count !== null ? String(count).padStart(4, "0") : "...."}
+      </div>
+    </motion.div>
   );
 }
 
