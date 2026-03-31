@@ -12,6 +12,14 @@ const stats = [
 const navLinks = ["Projects", "Skills", "Contact"];
 
 export default function Home() {
+  const [projects, setProjects] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch("/api/projects")
+      .then((r) => r.json())
+      .then((d) => setProjects(d.projects));
+  }, []);
+  
   return (
     <main style={{ minHeight: "100vh" }}>
 
@@ -327,15 +335,6 @@ function VisitorScore() {
 }
 
 /* ── DATA ── */
-
-const projects = [
-  { world: "WORK 1-1", icon: "🏦", title: "DOC TRACKER SYSTEM", company: "Amur Financial Group · Surrey", type: "work", desc: "Modernized mortgage processing system handling documents, applications, and funding workflows. Reverse-engineered legacy rules into modern code.", tags: ["PHP", "Laravel", "Vue.js", "SQL"], stat: "35% perf boost" },
-  { world: "WORK 1-2", icon: "📊", title: "ANALYTICS DASHBOARD", company: "Amur Financial Group · Surrey", type: "work", desc: "Designed dashboards cutting manual reconciliation and lookup time. Built dynamic reusable Vue.js components for multiple team functions.", tags: ["Vue.js", "PHP", "Bootstrap", "SQL"], stat: "30–40% time saved" },
-  { world: "WORK 2-1", icon: "📈", title: "FINANCIAL ANALYSIS TOOL", company: "Canalyst · Vancouver", type: "work", desc: "Built C# .NET application for financial analysis workflows. Expanded Excel toolkit with analyst efficiency features and GraphQL queries.", tags: ["C#", ".NET", "GraphQL", "Excel"], stat: "8% backlog reduced" },
-  { world: "WORK 2-2", icon: "🚀", title: "CI/CD PIPELINE", company: "Canalyst · Vancouver", type: "work", desc: "Led automated deployment using Amazon S3 and CI/CD pipelines. Integrated unit tests and accelerated production release cycles.", tags: ["AWS S3", "CI/CD", "Unit Testing"], stat: "Accelerated releases" },
-  { world: "SCHOOL 3-1", icon: "☁️", title: "TUTORME WEB APP", company: "SFU · CMPT-474", type: "school", desc: "Scalable AWS app for student–tutor matching using serverless microservices, secure APIs, DynamoDB, and React frontend on AWS Amplify.", tags: ["AWS", "React", "DynamoDB", "Serverless"], stat: "Fully serverless" },
-  { world: "SCHOOL 3-2", icon: "🤖", title: "ACTIVITY CLASSIFIER", company: "SFU · CMPT-353", type: "school", desc: "ML pipeline classifying human activities from sensor data using ETL, signal filtering, feature engineering, and Apache Spark.", tags: ["Python", "Apache Spark", "ML", "ETL"], stat: "80% accuracy" },
-];
 
 const skills = [
   { icon: "🐘", name: "PHP", color: "#7c3aed" },
