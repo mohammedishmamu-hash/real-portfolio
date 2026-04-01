@@ -1,7 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { GitBranch, ExternalLink, Download } from "lucide-react";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
+import { Download } from "lucide-react";
 
 const stats = [
   { num: "12+", label: "Projects" },
@@ -134,9 +136,9 @@ export default function Home() {
           </div>
           <div style={{ display: "flex", gap: 20, marginTop: 24 }}>
             {[
-              { icon: GitBranch, label: "GITHUB", href: "https://github.com/busyma" },
-              { icon: ExternalLink, label: "LINKEDIN", href: "https://linkedin.com/in/mohammad-ishmam-uddin" },
-              { icon: ExternalLink, label: "EMAIL", href: "mailto:mohammedishmamu@gmail.com" },
+              { icon: FaGithub, label: "GITHUB", href: "https://github.com/busyma" },
+              { icon: FaLinkedin, label: "LINKEDIN", href: "https://linkedin.com/in/mohammad-ishmam-uddin" },
+              { icon: MdEmail, label: "EMAIL", href: "mailto:mohammedishmamu@gmail.com" },
             ].map(({ icon: Icon, label, href }) => (
               <a key={label} href={href} target="_blank" rel="noreferrer"
                 style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#fff", textDecoration: "none" }}>
@@ -177,7 +179,7 @@ function PixelButton({ children, href, primary }: { children: React.ReactNode; h
   return (
     <a href={href}
       download={href === "/cv.pdf" ? "Mohammed_Ishmam_Uddin_CV.pdf" : undefined}
-      style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, padding: "10px 18px", background: primary ? "#e8272b" : "#ffd700", color: primary ? "#fff" : "#1a1a2e", borderBottom: `4px solid ${primary ? "#8b0000" : "#b8860b"}`, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+      style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, padding: "10px 18px", background: primary ? "#e8272b" : "#ffd700", color: primary ? "#fff" : "#1a1a2e", borderBottom: `4px solid ${primary ? "#8b0000" : "#b8860b"}`, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
       {children}
     </a>
   );
