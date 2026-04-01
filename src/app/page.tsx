@@ -17,7 +17,7 @@ export default function Home() {
   React.useEffect(() => {
     fetch("/api/projects")
       .then((r) => r.json())
-      .then((d) => setProjects(d.projects));
+      .then((d) => setProjects(d.projects.map((p: any) => ({ ...p, desc: p.description }))));
   }, []);
   
   return (
