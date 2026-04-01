@@ -243,9 +243,25 @@ function XPBar({ name, value }: { name: string; value: number }) {
 function ContactForm() {
   const [form, setForm] = React.useState({ name: "", email: "", message: "" });
   const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errors, setErrors] = React.useState({ name: false, email: false, message: false });
+  const [shake, setShake] = React.useState({ name: false, email: false, message: false });
+
+  const triggerShake = (field: "name" | "email" | "message") => {
+    setShake((prev) => ({ ...prev, [field]: true }));
+    setTimeout(() => setShake((prev) => ({ ...prev, [field]: false })), 500);
+  };
 
   const handleSubmit = async () => {
-    if (!form.name || !form.email || !form.message) return;
+    const newErrors = {
+      name: !form.name,
+      email: !form.email,
+      message: !form.message,
+    };
+    setErrors(newErrors);
+    Object.keys(newErrors).forEach((f) => {
+      if (newErrors[f as keyof typeof newErrors]) triggerShake(f as "name" | "email" | "message");
+    });
+    if (Object.values(newErrors).some(Boolean)) return;
     setStatus("loading");
     try {
       const res = await fetch("/api/contact", {
@@ -253,60 +269,64 @@ function ContactForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (res.ok) {
-        setStatus("success");
-        setForm({ name: "", email: "", message: "" });
-      } else {
-        setStatus("error");
-      }
-    } catch {
-      setStatus("error");
-    }
+      res.ok ? (setStatus("success"), setForm({ name: "", email: "", message: "" }), setErrors({ name: false, email: false, message: false })) : setStatus("error");
+    } catch { setStatus("error"); }
   };
 
-  if (status === "success") {
-    return (
-      <div style={{ textAlign: "center", padding: "32px 0" }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
-        <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#00a800", marginBottom: 8 }}>
-          MESSAGE SENT!
-        </div>
-        <p style={{ fontSize: 12, color: "#6b7280" }}>I'll get back to you soon.</p>
-      </div>
-    );
-  }
+  if (status === "success") return (
+    <div style={{ textAlign: "center", padding: "32px 0" }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+      <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#00a800", marginBottom: 8 }}>MESSAGE SENT!</div>
+      <p style={{ fontSize: 12, color: "#6b7280" }}>I'll get back to you soon.</p>
+    </div>
+  );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <input
-        style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", fontFamily: "inherit" }}
-        placeholder="Your name"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-      />
-      <input
-        style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", fontFamily: "inherit" }}
-        placeholder="your@email.com"
-        value={form.email}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-      />
-      <textarea
-        style={{ width: "100%", border: "2px solid #111827", padding: "8px 12px", fontSize: 13, outline: "none", background: "#f9fafb", height: 96, resize: "none", fontFamily: "inherit" }}
-        placeholder="What's on your mind?"
-        value={form.message}
-        onChange={(e) => setForm({ ...form, message: e.target.value })}
-      />
-      {status === "error" && (
-        <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#e8272b" }}>
-          ✗ FAILED. TRY AGAIN.
-        </p>
-      )}
-      <button
-        onClick={handleSubmit}
-        disabled={status === "loading"}
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <style>{`@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }`}</style>
+      {(["name", "email", "message"] as const).map((field) => (
+        <FormField
+          key={field}
+          field={field}
+          value={form[field]}
+          error={errors[field]}
+          shaking={shake[field]}
+          placeholder={field === "name" ? "Your name" : field === "email" ? "your@email.com" : "What's on your mind?"}
+          multiline={field === "message"}
+          onChange={(val) => {
+            setForm({ ...form, [field]: val });
+            if (val) setErrors({ ...errors, [field]: false });
+          }}
+        />
+      ))}
+      {status === "error" && <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#e8272b" }}>✗ FAILED. TRY AGAIN.</p>}
+      <button onClick={handleSubmit} disabled={status === "loading"}
         style={{ width: "100%", background: status === "loading" ? "#999" : "#e8272b", color: "#fff", border: "none", borderBottom: `4px solid ${status === "loading" ? "#666" : "#8b0000"}`, padding: "12px", fontFamily: "'Press Start 2P', monospace", fontSize: 8, cursor: status === "loading" ? "not-allowed" : "pointer" }}>
         {status === "loading" ? "SENDING..." : "▶ SEND MESSAGE"}
       </button>
+    </div>
+  );
+}
+
+function FormField({ field, value, error, shaking, placeholder, multiline, onChange }: {
+  field: string; value: string; error: boolean; shaking: boolean;
+  placeholder: string; multiline?: boolean; onChange: (val: string) => void;
+}) {
+  const inputStyle = {
+    width: "100%", border: `2px solid ${error ? "#e8272b" : "#111827"}`,
+    padding: "8px 12px", fontSize: 13, outline: "none",
+    background: error ? "#fff5f5" : "#f9fafb", fontFamily: "inherit",
+    animation: shaking ? "shake 0.5s ease" : "none",
+    ...(multiline && { height: 96, resize: "none" as const }),
+  };
+
+  return (
+    <div>
+      {multiline
+        ? <textarea style={inputStyle} placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
+        : <input style={inputStyle} placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
+      }
+      {error && <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#e8272b", margin: "2px 0 4px" }}>✗ {field.toUpperCase()} IS REQUIRED</p>}
     </div>
   );
 }
