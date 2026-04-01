@@ -332,13 +332,24 @@ function FormField({ field, value, error, shaking, placeholder, multiline, onCha
 }
 
 function VisitorScore() {
-  const [count, setCount] = useState<number | null>(null);
+  const [count, setCount] = React.useState<number | null>(null);
+  const [projects, setProjects] = React.useState<any[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     fetch("/api/visitors", { method: "POST" })
       .then((r) => r.json())
       .then((d) => setCount(d.count));
+
+    fetch("/api/projects")
+      .then((r) => r.json())
+      .then((d) => setProjects(d.projects));
   }, []);
+
+  const score = projects.reduce((total, p) => {
+    return total + (p.type === "work" ? 12 : 8);
+  }, 0);
+
+  const paddedScore = String(score).padStart(6, "0");
 
   return (
     <motion.div
@@ -347,8 +358,8 @@ function VisitorScore() {
       style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#fff", textAlign: "right", lineHeight: 2 }}
     >
       <div>SCORE</div>
-      <div>008450</div>
-      <div>★ × 12</div>
+      <div>{paddedScore}</div>
+      <div>★ × {projects.length}</div>
       <div style={{ color: "#ffd700" }}>
         👁 × {count !== null ? String(count).padStart(4, "0") : "...."}
       </div>
