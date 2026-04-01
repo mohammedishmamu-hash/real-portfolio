@@ -358,8 +358,8 @@ function VisitorScore() {
       style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#fff", textAlign: "right", lineHeight: 2 }}
     >
       <div>SCORE</div>
-      <div>{paddedScore}</div>
-      <div>★ × {projects.length}</div>
+      <div>{projects.length > 0 ? paddedScore : "......"}</div>
+      <div>★ × {projects.length > 0 ? projects.length : "..."}</div>
       <div style={{ color: "#ffd700" }}>
         👁 × {count !== null ? String(count).padStart(4, "0") : "...."}
       </div>
