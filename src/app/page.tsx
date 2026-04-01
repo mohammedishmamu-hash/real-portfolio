@@ -332,14 +332,15 @@ function FormField({ field, value, error, shaking, placeholder, multiline, onCha
 }
 
 function VisitorScore() {
+  const [mounted, setMounted] = React.useState(false);
   const [count, setCount] = React.useState<number | null>(null);
   const [projects, setProjects] = React.useState<any[]>([]);
 
   React.useEffect(() => {
+    setMounted(true);
     fetch("/api/visitors", { method: "POST" })
       .then((r) => r.json())
       .then((d) => setCount(d.count));
-
     fetch("/api/projects")
       .then((r) => r.json())
       .then((d) => setProjects(d.projects));
@@ -349,7 +350,14 @@ function VisitorScore() {
     return total + (p.type === "work" ? 12 : 8);
   }, 0);
 
-  const paddedScore = String(score).padStart(6, "0");
+  if (!mounted) return (
+    <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#fff", textAlign: "right", lineHeight: 2, opacity: 0 }}>
+      <div>SCORE</div>
+      <div>......</div>
+      <div>★ × ...</div>
+      <div>👁 × ....</div>
+    </div>
+  );
 
   return (
     <motion.div
@@ -358,8 +366,8 @@ function VisitorScore() {
       style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#fff", textAlign: "right", lineHeight: 2 }}
     >
       <div>SCORE</div>
-      <div>{projects.length > 0 ? paddedScore : "......"}</div>
-      <div>★ × {projects.length > 0 ? projects.length : "..."}</div>
+      <div>{String(score).padStart(6, "0")}</div>
+      <div>★ × {projects.length}</div>
       <div style={{ color: "#ffd700" }}>
         👁 × {count !== null ? String(count).padStart(4, "0") : "...."}
       </div>
