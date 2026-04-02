@@ -15,6 +15,7 @@ const navLinks = ["Projects", "Skills", "Contact"];
 
 export default function Home() {
   const [projects, setProjects] = React.useState<any[]>([]);
+  const [selectedProject, setSelectedProject] = React.useState<any | null>(null);
 
   React.useEffect(() => {
     fetch("/api/projects")
@@ -104,7 +105,7 @@ export default function Home() {
           </h2>
           <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 24 }}>Real quests completed — at work and at university.</p>
 
-          <ProjectsWithFilter projects={projects} />
+          <ProjectsWithFilter projects={projects} onSelect={setSelectedProject} />
         </motion.div>
       </section>
 
@@ -147,7 +148,10 @@ export default function Home() {
           </div>
         </motion.div>
       </section>
-
+      {selectedProject && (
+        <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+      )}
+      <AIChatbot />
     </main>
   );
 }
@@ -184,11 +188,13 @@ function PixelButton({ children, href, primary }: { children: React.ReactNode; h
   );
 }
 
-function ProjectCard({ world, icon, title, company, type, desc, tags, stat, featured, index }: {
-  world: string; icon: string; title: string; company: string; type: string; desc: string; tags: string[]; stat: string; featured?: boolean; index: number;
+function ProjectCard({ world, icon, title, company, type, desc, tags, stat, featured, index, onClick }: {
+  world: string; icon: string; title: string; company: string; type: string;
+  desc: string; tags: string[]; stat: string; featured?: boolean; index: number; onClick?: () => void;
 }) {
   return (
     <motion.div
+      onClick={onClick}
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       transition={{ delay: index * 0.08 }} whileHover={{ y: -4 }}
       style={{ background: "#2d2d44", border: "2px solid #3d3d5c", borderBottom: "4px solid #1a1a2e", padding: 18, cursor: "pointer", position: "relative" }}>
@@ -383,7 +389,7 @@ function VisitorScore() {
   );
 }
 
-function ProjectsWithFilter({ projects }: { projects: any[] }) {
+function ProjectsWithFilter({ projects, onSelect }: { projects: any[]; onSelect: (p: any) => void }) {
   const [filter, setFilter] = React.useState<"all" | "featured" | "work" | "school">("all");
 
   const filters = [
@@ -436,13 +442,233 @@ function ProjectsWithFilter({ projects }: { projects: any[] }) {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, maxWidth: 960 }}>
           {filtered.map((p, i) => (
-            <ProjectCard key={p.id || i} {...p} index={i} />
+            <ProjectCard key={p.id || i} {...p} index={i} onClick={() => onSelect(p)} />
           ))}
         </div>
       )}
     </div>
   );
 }
+
+function ProjectModal({ project, onClose }: { project: any; onClose: () => void }) {
+  React.useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "#1a1a2e", border: "2px solid #3d3d5c", borderBottom: "4px solid #000", padding: 32, maxWidth: 560, width: "100%", position: "relative", maxHeight: "90vh", overflowY: "auto" }}>
+
+        {/* Close button */}
+        <button onClick={onClose}
+          style={{ position: "absolute", top: 12, right: 12, background: "#e8272b", color: "#fff", border: "none", borderBottom: "3px solid #8b0000", width: 32, height: 32, fontFamily: "'Press Start 2P', monospace", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          x
+        </button>
+
+        {/* World + badges row */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, marginTop: 32 }}>
+          <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#6b7280" }}>{project.world}</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+            {project.featured && (
+              <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, background: "#ffd70020", color: "#ffd700", border: "1px solid #ffd70040", padding: "2px 6px" }}>★ FEATURED</div>
+            )}
+            <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, background: project.type === "work" ? "#e8272b20" : "#5c94fc20", color: project.type === "work" ? "#e8272b" : "#5c94fc", border: `1px solid ${project.type === "work" ? "#e8272b40" : "#5c94fc40"}`, padding: "3px 8px" }}>
+              {project.type === "work" ? "WORK" : "SCHOOL"}
+            </div>
+          </div>
+        </div>
+
+        {/* Icon + title */}
+        <div style={{ fontSize: 48, marginBottom: 12 }}>{project.icon}</div>
+        <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 13, color: "#ffd700", lineHeight: 1.6, marginBottom: 8 }}>{project.title}</div>
+        <div style={{ fontSize: 12, color: "#a78bfa", fontStyle: "italic", marginBottom: 20 }}>{project.company}</div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: "#3d3d5c", marginBottom: 20 }} />
+
+        {/* Description */}
+        <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#6b7280", marginBottom: 10 }}>ABOUT THIS PROJECT</div>
+        <p style={{ fontSize: 13, color: "#d1d5db", lineHeight: 1.8, marginBottom: 24 }}>{project.desc}</p>
+
+        {/* Tags */}
+        <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#6b7280", marginBottom: 10 }}>TECH STACK</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
+          {project.tags.map((t: string) => (
+            <span key={t} style={{ fontSize: 11, padding: "4px 12px", background: "#0f0f1a", color: "#60a5fa", border: "1px solid #3b82f620" }}>{t}</span>
+          ))}
+        </div>
+
+        {/* Stat */}
+        <div style={{ display: "inline-block", fontFamily: "'Press Start 2P', monospace", fontSize: 8, background: "#ffd70015", color: "#ffd700", border: "1px solid #ffd70030", padding: "6px 12px" }}>
+          ★ {project.stat}
+        </div>
+
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function AIChatbot() {
+  const [open, setOpen] = React.useState(false);
+  const [messages, setMessages] = React.useState<{ role: string; content: string }[]>([]);
+  const [input, setInput] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (open && messages.length === 0) {
+      setMessages([{
+        role: "assistant",
+        content: "Hi! I'm Mohammed's AI assistant. Ask me anything about his experience, skills, or projects! 🍄"
+      }]);
+    }
+  }, [open]);
+
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return;
+    const userMessage = { role: "user", content: input };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: newMessages }),
+      });
+      const data = await res.json();
+      setMessages([...newMessages, { role: "assistant", content: data.message }]);
+    } catch {
+      setMessages([...newMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again!" }]);
+    }
+    setLoading(false);
+  };
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  const suggestedQuestions = [
+    "What's Mohammed's experience?",
+    "What tech stack does he use?",
+    "Is he open to work?",
+  ];
+
+  return (
+    <>
+      {/* Chat window */}
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20 }}
+          style={{ position: "fixed", bottom: 90, right: 24, width: 340, height: 480, background: "#1a1a2e", border: "2px solid #3d3d5c", borderBottom: "4px solid #000", display: "flex", flexDirection: "column", zIndex: 999, boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
+
+          {/* Header */}
+          <div style={{ background: "#0f0f1a", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #3d3d5c" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ fontSize: 20 }}>🤖</div>
+              <div>
+                <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: "#ffd700" }}>ASK ME ANYTHING</div>
+                <div style={{ fontSize: 10, color: "#00a800", marginTop: 2 }}>● Online</div>
+              </div>
+            </div>
+            <button onClick={() => setOpen(false)}
+              style={{ background: "#e8272b", color: "#fff", border: "none", borderBottom: "2px solid #8b0000", width: 28, height: 28, fontFamily: "'Press Start 2P', monospace", fontSize: 9, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              x
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div style={{ flex: 1, overflowY: "auto", padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+            {messages.map((m, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                <div style={{
+                  maxWidth: "80%",
+                  padding: "8px 12px",
+                  background: m.role === "user" ? "#e8272b" : "#2d2d44",
+                  color: m.role === "assistant" ? "#ffd700" : "#fff",
+                  fontSize: 12,
+                  fontFamily: "inherit",
+                  lineHeight: 1.6,
+                  border: `1px solid ${m.role === "user" ? "#8b0000" : "#ffd70030"}`,
+                  borderBottom: `2px solid ${m.role === "user" ? "#5a0000" : "#ffd70015"}`,
+                }}>
+                  {m.content}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ padding: "8px 12px", background: "#2d2d44", border: "1px solid #3d3d5c", borderBottom: "2px solid #1a1a2e" }}>
+                  <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: "#6b7280" }}>THINKING...</div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Suggested questions — only show when just greeting */}
+          {messages.length === 1 && (
+            <div style={{ padding: "0 14px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+              {suggestedQuestions.map((q) => (
+                <button key={q} onClick={() => { setInput(q); }}
+                  style={{ background: "#0f0f1a", color: "#60a5fa", border: "1px solid #3b82f620", padding: "6px 10px", fontSize: 11, cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}>
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Input */}
+          <div style={{ padding: 12, borderTop: "1px solid #3d3d5c", display: "flex", gap: 8 }}>
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKey}
+              placeholder="Ask about Mohammed..."
+              style={{ flex: 1, background: "#0f0f1a", border: "1px solid #3d3d5c", padding: "8px 10px", color: "#fff", fontSize: 12, outline: "none", fontFamily: "inherit" }}
+            />
+            <button onClick={sendMessage} disabled={loading}
+              style={{ background: loading ? "#555" : "#e8272b", color: "#fff", border: "none", borderBottom: `2px solid ${loading ? "#333" : "#8b0000"}`, padding: "8px 12px", fontFamily: "'Press Start 2P', monospace", fontSize: 8, cursor: loading ? "not-allowed" : "pointer" }}>
+              ▶
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Floating bubble button */}
+      <motion.button
+        onClick={() => setOpen(!open)}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        style={{ position: "fixed", bottom: 24, right: 24, width: 56, height: 56, background: open ? "#2d2d44" : "#e8272b", border: "none", borderBottom: `4px solid ${open ? "#1a1a2e" : "#8b0000"}`, borderRadius: 0, cursor: "pointer", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
+        {open ? "✕" : "🤖"}
+      </motion.button>
+    </>
+  );
+}
+
 /* ── DATA ── */
 
 const skills = [
