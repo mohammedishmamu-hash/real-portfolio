@@ -102,10 +102,9 @@ export default function Home() {
           <h2 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 14, color: "#ffd700", textShadow: "1px 1px 0 #000", marginBottom: 6 }}>
             PROJECTS
           </h2>
-          <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 32 }}>Real quests completed — at work and at university.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, maxWidth: 960 }}>
-            {projects.map((p, i) => <ProjectCard key={i} {...p} index={i} />)}
-          </div>
+          <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 24 }}>Real quests completed — at work and at university.</p>
+
+          <ProjectsWithFilter projects={projects} />
         </motion.div>
       </section>
 
@@ -185,8 +184,8 @@ function PixelButton({ children, href, primary }: { children: React.ReactNode; h
   );
 }
 
-function ProjectCard({ world, icon, title, company, type, desc, tags, stat, index }: {
-  world: string; icon: string; title: string; company: string; type: string; desc: string; tags: string[]; stat: string; index: number;
+function ProjectCard({ world, icon, title, company, type, desc, tags, stat, featured, index }: {
+  world: string; icon: string; title: string; company: string; type: string; desc: string; tags: string[]; stat: string; featured?: boolean; index: number;
 }) {
   return (
     <motion.div
@@ -194,14 +193,23 @@ function ProjectCard({ world, icon, title, company, type, desc, tags, stat, inde
       transition={{ delay: index * 0.08 }} whileHover={{ y: -4 }}
       style={{ background: "#2d2d44", border: "2px solid #3d3d5c", borderBottom: "4px solid #1a1a2e", padding: 18, cursor: "pointer", position: "relative" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-        <div>
-          <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#6b7280", marginBottom: 4 }}>{world}</div>
-          <div style={{ fontSize: 28 }}>{icon}</div>
-        </div>
+      <div>
+        <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#6b7280", marginBottom: 4 }}>{world}</div>
+        <div style={{ fontSize: 28 }}>{icon}</div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+        {/* Featured badge */}
+        {featured && (
+          <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, background: "#ffd70020", color: "#ffd700", border: "1px solid #ffd70040", padding: "2px 6px" }}>
+            ★ FEATURED
+          </div>
+        )}
+        {/* Work/School badge */}
         <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, background: type === "work" ? "#e8272b20" : "#5c94fc20", color: type === "work" ? "#e8272b" : "#5c94fc", border: `1px solid ${type === "work" ? "#e8272b40" : "#5c94fc40"}`, padding: "3px 8px" }}>
           {type === "work" ? "WORK" : "SCHOOL"}
         </div>
       </div>
+</div>
       <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: "#ffd700", marginBottom: 4, lineHeight: 1.6 }}>{title}</div>
       <div style={{ fontSize: 11, color: "#a78bfa", marginBottom: 8, fontStyle: "italic" }}>{company}</div>
       <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 12, lineHeight: 1.6 }}>{desc}</p>
@@ -375,6 +383,66 @@ function VisitorScore() {
   );
 }
 
+function ProjectsWithFilter({ projects }: { projects: any[] }) {
+  const [filter, setFilter] = React.useState<"all" | "featured" | "work" | "school">("all");
+
+  const filters = [
+    { key: "all", label: "ALL" },
+    { key: "featured", label: "★ FEATURED" },
+    { key: "work", label: "WORK" },
+    { key: "school", label: "SCHOOL" },
+  ] as const;
+
+  const filtered = projects.filter((p) => {
+    if (filter === "all") return true;
+    if (filter === "featured") return p.featured === true;
+    return p.type === filter;
+  });
+
+  return (
+    <div>
+      {/* Filter buttons */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+        {filters.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: 8,
+              padding: "8px 14px",
+              background: filter === f.key ? "#e8272b" : "#2d2d44",
+              color: filter === f.key ? "#fff" : "#9ca3af",
+              border: "2px solid",
+              borderColor: filter === f.key ? "#8b0000" : "#3d3d5c",
+              borderBottom: `3px solid ${filter === f.key ? "#5a0000" : "#1a1a2e"}`,
+              cursor: "pointer",
+            }}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Project count */}
+      <p style={{ color: "#6b7280", fontSize: 11, marginBottom: 16, fontFamily: "'Press Start 2P', monospace" }}>
+        {filtered.length} QUEST{filtered.length !== 1 ? "S" : ""} FOUND
+      </p>
+
+      {/* Project grid */}
+      {filtered.length === 0 ? (
+        <div style={{ color: "#6b7280", fontFamily: "'Press Start 2P', monospace", fontSize: 9, padding: "32px 0" }}>
+          NO QUESTS FOUND
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, maxWidth: 960 }}>
+          {filtered.map((p, i) => (
+            <ProjectCard key={p.id || i} {...p} index={i} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 /* ── DATA ── */
 
 const skills = [
