@@ -6,8 +6,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const pixel = Press_Start_2P({ weight: "400", subsets: ["latin"], variable: "--font-pixel" });
 
 export const metadata: Metadata = {
-  title: "Your Name — Portfolio",
-  description: "Full-Stack Developer Portfolio",
+  title: "Mohammed Ishmam Uddin — Portfolio",
+  description: "Full-Stack Portfolio",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
