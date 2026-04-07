@@ -197,7 +197,7 @@ function ProjectCard({ world, icon, title, company, type, desc, tags, stat, feat
       onClick={onClick}
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       transition={{ delay: index * 0.08 }} whileHover={{ y: -4 }}
-      style={{ background: "#2d2d44", border: "2px solid #3d3d5c", borderBottom: "4px solid #1a1a2e", padding: 18, cursor: "pointer", position: "relative" }}>
+      style={{ background: "#2d2d44", border: "2px solid #3d3d5c", borderBottom: "4px solid #1a1a2e", padding: 18, cursor: "pointer", position: "relative", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
       <div>
         <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#6b7280", marginBottom: 4 }}>{world}</div>
@@ -224,8 +224,10 @@ function ProjectCard({ world, icon, title, company, type, desc, tags, stat, feat
           <span key={t} style={{ fontSize: 10, padding: "2px 8px", background: "#1a1a2e", color: "#60a5fa", border: "1px solid #3b82f620" }}>{t}</span>
         ))}
       </div>
-      <div style={{ display: "inline-block", fontFamily: "'Press Start 2P', monospace", fontSize: 7, background: "#ffd70015", color: "#ffd700", border: "1px solid #ffd70030", padding: "3px 8px" }}>
-        ★ {stat}
+      <div style={{ marginTop: "auto", paddingTop: 10 }}>
+        <div style={{ display: "inline-block", fontFamily: "'Press Start 2P', monospace", fontSize: 7, background: "#ffd70015", color: "#ffd700", border: "1px solid #ffd70030", padding: "3px 8px" }}>
+          ★ {stat}
+        </div>
       </div>
     </motion.div>
   );
@@ -604,18 +606,18 @@ function AIChatbot() {
             {messages.map((m, i) => (
               <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
                 <div style={{
-                  maxWidth: "80%",
-                  padding: "8px 12px",
-                  background: m.role === "user" ? "#e8272b" : "#2d2d44",
-                  color: m.role === "assistant" ? "#ffd700" : "#fff",
-                  fontSize: 12,
-                  fontFamily: "inherit",
-                  lineHeight: 1.6,
-                  border: `1px solid ${m.role === "user" ? "#8b0000" : "#ffd70030"}`,
-                  borderBottom: `2px solid ${m.role === "user" ? "#5a0000" : "#ffd70015"}`,
-                }}>
-                  {m.content}
-                </div>
+                maxWidth: "80%",
+                padding: "8px 12px",
+                background: m.role === "user" ? "#e8272b" : "#2d2d44",
+                color: m.role === "assistant" ? "#ffd700" : "#fff",
+                fontSize: 12,
+                fontFamily: "inherit",
+                lineHeight: 1.6,
+                border: `1px solid ${m.role === "user" ? "#8b0000" : "#ffd70030"}`,
+                borderBottom: `2px solid ${m.role === "user" ? "#5a0000" : "#ffd70015"}`,
+              }}>
+                {m.content}
+              </div>
               </div>
             ))}
             {loading && (
